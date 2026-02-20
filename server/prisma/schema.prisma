@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String            @id @default(uuid()) @db.Uuid
+  email              String            @unique @db.VarChar(255)
+  passwordHash       String
+  fullName           String            @db.VarChar(100)
+  avatarUrl          String?
+  emailVerified      Boolean           @default(false)
+  verifyToken        String?
+  verifyTokenExpiry  DateTime?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  isActive           Boolean           @default(true)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  color              String            @default("#6366f1")
+  grantedPermissions BoardPermission[] @relation("PermissionGrantedBy")
+  permissions        BoardPermission[] @relation("UserPermissions")
+  createdShareLinks  BoardShareLink[]  @relation("LinkCreatedBy")
+  boards             Board[]           @relation("CreatedBy")
+  notifications      Notification[]
+  sessions           Session[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Board {
+  id              String            @id @default(uuid()) @db.Uuid
+  title           String            @default("Untitled Board") @db.VarChar(255)
+  thumbnailUrl    String?
+  canvasData      Json?
+  backgroundColor String            @default("#1A1F36")
+  gridType        String            @default("dots")
+  createdById     String            @db.Uuid
+  isStarred       Boolean           @default(false)
+  isDeleted       Boolean           @default(false)
+  deletedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  publicAccess    String            @default("private")
+  permissions     BoardPermission[]
+  shareLinks      BoardShareLink[]
+  createdBy       User              @relation("CreatedBy", fields: [createdById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedAt(sort: Desc)])
+  @@index([isDeleted])
+  @@map("boards")
+}
+
+model BoardPermission {
+  id          String   @id @default(uuid()) @db.Uuid
+  boardId     String   @db.Uuid
+  userId      String   @db.Uuid
+  permission  String   @default("viewer")
+  grantedById String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  grantedBy   User?    @relation("PermissionGrantedBy", fields: [grantedById], references: [id])
+  user        User     @relation("UserPermissions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+  @@index([userId, boardId])
+  @@map("board_permissions")
+}
+
+model BoardShareLink {
+  id          String   @id @default(uuid()) @db.Uuid
+  boardId     String   @db.Uuid
+  shareToken  String   @unique
+  permission  String   @default("viewer")
+  isActive    Boolean  @default(true)
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now())
+  board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation("LinkCreatedBy", fields: [createdById], references: [id])
+
+  @@index([shareToken])
+  @@map("board_share_links")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  type      String
+  title     String
+  message   String?
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
