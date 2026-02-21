@@ -19,3 +19,21 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+build_error.log
+
+# Compiled config files
+tailwind.config.js
+tailwind.config.d.ts
+vite.config.js
+vite.config.d.ts
+
+
+# Editor
+.vscode/
+
+# Debug files
+git
+check_users.ts
