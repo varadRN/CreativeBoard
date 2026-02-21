@@ -46,7 +46,7 @@ CreativeBoard is a real-time collaborative whiteboard web application designed f
 - **ORM**: [Prisma](https://www.prisma.io/)
 - **Cache/Pub-Sub**: [Redis](https://redis.io/)
 - **Real-time Communication**: [Socket.io](https://socket.io/)
-- **Authentication**: JWT (JSON Web Tokens)
+- **Authentication**: JWT 
 
 ## 🏁 Getting Started
 
@@ -74,6 +74,8 @@ cd ../server && npm install
 
 cd client && npm run dev
 cd server && npm run dev
+
+
 
 ## Project Structure
 
