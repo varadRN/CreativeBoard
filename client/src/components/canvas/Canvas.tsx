@@ -16,7 +16,7 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useDisableBrowserZoom } from '@/hooks/useDisableBrowserZoom';
 
-// Collaboration Hooks
+// Collaboration Hooks  ( ws + presence  setup )
 import { useWebSocket } from '@/hooks/collaboration/useWebSocket';
 import { usePresence } from '@/hooks/collaboration/usePresence';
 import { useCursorEmitter } from '@/hooks/collaboration/useCursors';
@@ -30,7 +30,7 @@ import { socketClient } from '@/lib/collaboration/socketClient';
 
 
 export const Canvas = () => {
-    useDisableBrowserZoom();
+    useDisableBrowserZoom();    // prevents pinch-zoom breaking the canvas
     const { boardId } = useParams<{ boardId: string }>();
     const { user } = useAuthStore();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -97,14 +97,14 @@ export const Canvas = () => {
         loadBoard();
     }, [boardId]);
 
-    // Initialize Fabric
+    // canvas init
     useEffect(() => {
         const canvasElement = canvasRef.current;
         const containerElement = containerRef.current;
 
         if (!canvasElement || !containerElement || !boardData) return;
 
-        // Dispose if already exists (crucial for React Strict Mode)
+        // Strict Mode double-mount fix
         if (fabricRef.current) {
             fabricRef.current.dispose();
         }
@@ -114,7 +114,7 @@ export const Canvas = () => {
         const canvas = new FabricCanvas(canvasElement, {
             width,
             height,
-            backgroundColor: 'transparent', // We handle bg in GridBackground for the pattern
+            backgroundColor: 'transparent', // handle bg in GridBackground for the pattern
             selection: true,
         });
 
@@ -154,7 +154,7 @@ export const Canvas = () => {
         }
     }, [boardData]);
 
-    // Enforce Read-Only Mode
+    // Read-Only Mode
     useEffect(() => {
         const canvas = fabricRef.current;
         if (!canvas) return;
@@ -176,7 +176,7 @@ export const Canvas = () => {
         canvas.requestRenderAll();
     }, [isReadOnly, isLoaded]); // Re-run when loaded or permissions change
 
-    // Zoom & Pan Handler
+    // Zoom & palm (logo) Handler
     useEffect(() => {
         const canvas = fabricRef.current;
         if (!canvas) return;
@@ -219,7 +219,7 @@ export const Canvas = () => {
         };
     }, [isLoaded]); // Attach handlers once canvas is loaded
 
-    // Canvas Disposal on Unmount/Board Change
+    // Canvas Disposal on Board Change
     useEffect(() => {
         return () => {
             if (fabricRef.current) {
@@ -251,14 +251,7 @@ export const Canvas = () => {
 
 
 
-    // Update saveCanvas to handle flush with sendBeacon if possible, 
-    // or rely on the fact that flush() calls the debounced function synchronously.
-    // However, api.put is async and might be cancelled.
-    // We'll trust the synchronous flush of the debounce, BUT 
-    // we need to make sure the request itself survives. 
-    // Since we can't easily change the debounce impl to use sendBeacon ONLY on flush,
-    // we will add a specific unmount handler that bypasses api.put if needed.
-    // ACTUALLY: The best way is to have a ref to the latest JSON and send it on unmount.
+    //   keepalive save on tab close
 
     const latestCanvasData = useRef<string | null>(null);
     useEffect(() => {
@@ -279,7 +272,6 @@ export const Canvas = () => {
         }
     }, [boardId, isLoaded]);
 
-    // Use fetch with keepalive on page unload (better than sendBeacon as it supports Auth headers)
     useEffect(() => {
         const handleUnload = () => {
             if (latestCanvasData.current && boardId) {
@@ -331,7 +323,7 @@ export const Canvas = () => {
     }, [boardId]);
 
     // ============================================================
-    // DIRECT CANVAS SYNC — Lightweight, instant, no lag
+    // DIRECT CANVAS SYNC — Lightweight, instant, no lag; dont touch this unless you know what youre doing (imp)
     // ============================================================
     const isRemoteSyncRef = useRef(false);
     const skipNextAddedRef = useRef(false); // Prevent double-emit from path:created + object:added
@@ -379,7 +371,7 @@ export const Canvas = () => {
             saveCanvas(boardId, json, thumbnail);
         }, 1000);
 
-        // --- EMITTERS (instant sync + debounced save) ---
+        // outgoing events
         const onObjectAdded = (e: any) => {
             if (shouldSkip() || !e.target) return;
             if (skipNextAddedRef.current) {
@@ -421,7 +413,7 @@ export const Canvas = () => {
             debouncedSave();
         };
 
-        // --- RECEIVERS (instant) ---
+        // incoming events from other users
         const sock = socketClient.getSocket();
 
         const handleElementAdded = (data: { element: any, userId: string }) => {
@@ -514,7 +506,7 @@ export const Canvas = () => {
 
 
 
-    // Handle undo/redo functionality
+    // Handle undo/redo functionality (imp)
     useEffect(() => {
         if (snapshot && !isRestoring.current) {
             const canvas = fabricRef.current;
@@ -563,7 +555,7 @@ export const Canvas = () => {
         }
     }, [zoom]);
 
-    // Instant Sticky Note Creation (Toolbar Click -> Center of Screen)
+    // Sticky Note 
     useEffect(() => {
         const canvas = fabricRef.current;
         if (!canvas || activeTool !== Tool.STICKY_NOTE) return;
@@ -745,8 +737,6 @@ export const Canvas = () => {
         }
     }, [activeTool, strokeColor, strokeWidth, fabricRef.current]);
 
-    // We don't need to update fabric's bg color anymore as it's transparent
-    // but the GridBackground listens to the store's backgroundColor
 
     // Event Listeners
     useEffect(() => {
