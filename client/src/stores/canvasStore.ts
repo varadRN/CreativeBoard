@@ -44,7 +44,6 @@ export interface CanvasState {
     setCanvasReady: (ready: boolean) => void;
     setZoom: (zoom: number) => void;
     setStickyNoteColorIndex: (index: number) => void;
-    setStickyNoteColorIndex: (index: number) => void;
     setPaletteOpen: (isOpen: boolean) => void;
     setIsReadOnly: (readOnly: boolean) => void;
 }
