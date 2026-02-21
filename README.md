@@ -5,7 +5,7 @@ CreativeBoard is a real-time collaborative whiteboard web application designed f
 ## 🚀 Key Features
 
 - **Real-time Collaboration**: Multiple users can draw, erase, and manipulate objects simultaneously with instant synchronization powered by Yjs and Socket.io.
-- **Advanced Drawing Tools**:
+- **Drawing Tools**:
   - Freehand drawing with smooth curves.
   - Shape tools (Rectangle, Circle, Triangle, Line).
   - Text annotations.
