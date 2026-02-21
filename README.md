@@ -101,8 +101,8 @@ CreativeBoard/
 │   │   ├── scripts/
 │   │   └── validators/    # Zod
 │   └── prisma/
+├── LICENSE
 ├── start_app.ps1
 ├── TODO.md
 └── README.md
-
 
