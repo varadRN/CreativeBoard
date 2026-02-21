@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Github, Linkedin, Disc } from 'lucide-react'; // Disc as Discord placeholder
+import { Github, Linkedin } from 'lucide-react'; // Removed Disc placeholder
 import { Logo } from '../shared/Logo';
 
 export const Footer = () => {
@@ -20,8 +20,7 @@ export const Footer = () => {
 
                     {/* Socials on top right or just here */}
                     <div className="flex gap-4 mt-6 md:mt-0">
-                        <a href="#" className="text-gray-400 hover:text-white transition-colors"><Github className="w-5 h-5" /></a>
-                        <a href="#" className="text-gray-400 hover:text-white transition-colors"><Disc className="w-5 h-5" /></a>
+                        <a href="https://github.com/varadRN/CreativeBoard" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><Github className="w-5 h-5" /></a>
                     </div>
                 </div>
 
