@@ -37,3 +37,7 @@ vite.config.d.ts
 # Debug files
 git
 check_users.ts
+
+
+# Root package-lock
+/package-lock.json
